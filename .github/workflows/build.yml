@@ -16,21 +16,29 @@ jobs:
       - name: Install Build Tools
         run: |
           sudo apt-get update
-          # Устанавливаем aapt и apksigner
-          sudo apt-get install -y aapt apksigner openjdk-11-jdk
-
-      - name: Download Android Framework (android.jar)
-        run: |
-          # Скачиваем легкий android.jar (API 30) для компиляции
-          wget -q https://github.com/kdrag0n/android_prebuilts/raw/master/android-30.jar -O android.jar
+          # aapt нужен для сборки, apksigner для подписи
+          sudo apt-get install -y aapt apksigner
 
       - name: Compile Overlay APK
         run: |
-          # Собираем APK используя ресурсы из папки res
+          # Мы используем встроенный в GitHub Actions Android SDK.
+          # Путь к нему: $ANDROID_SDK_ROOT/platforms/android-34/android.jar
+          # Если 34 нет, он возьмет 33. Обычно на ubuntu-22.04 есть 33 и 34.
+          
+          ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-34/android.jar"
+          
+          if [ ! -f "$ANDROID_JAR" ]; then
+            echo "Android 34 not found, trying 33..."
+            ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-33/android.jar"
+          fi
+          
+          echo "Using android.jar at: $ANDROID_JAR"
+
+          # Сборка
           aapt package -f \
             -M AndroidManifest.xml \
             -S res \
-            -I android.jar \
+            -I "$ANDROID_JAR" \
             -F unaligned.apk \
             --min-sdk-version 29 \
             --target-sdk-version 30
