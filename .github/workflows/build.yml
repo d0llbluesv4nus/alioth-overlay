@@ -16,25 +16,58 @@ jobs:
       - name: Install Build Tools
         run: |
           sudo apt-get update
-          # aapt нужен для сборки, apksigner для подписи
           sudo apt-get install -y aapt apksigner
+
+      - name: Generate XML Files (Fixed Duplicates)
+        run: |
+          mkdir -p res/values
+
+          # --- CONFIG.XML ---
+          # Убрали rounded_corner_radius отсюда, так как он есть в dimens.xml
+          cat <<EOF > res/values/config.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <bool name="config_showNavigationBar">true</bool>
+              <!-- Вырез камеры -->
+              <string name="config_mainBuiltInDisplayCutout">M 540,35 a 35,35 0 1,0 0,70 a 35,35 0 1,0 0,-70 Z</string>
+              <bool name="config_fillMainBuiltInDisplayCutout">true</bool>
+              <!-- Яркость -->
+              <bool name="config_automatic_brightness_available">true</bool>
+              <integer name="config_screenBrightnessSettingMinimum">1</integer>
+              <integer name="config_screenBrightnessSettingMaximum">1023</integer>
+              <integer name="config_screenBrightnessDoze">17</integer>
+              <!-- Герцовка -->
+              <integer name="config_defaultRefreshRate">120</integer>
+              <integer name="config_defaultPeakRefreshRate">120</integer>
+              <!-- Сканер -->
+              <bool name="config_fingerprintSupportsGestures">true</bool>
+          </resources>
+          EOF
+
+          # --- DIMENS.XML ---
+          # Оставляем размеры и скругления здесь
+          cat <<EOF > res/values/dimens.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <dimen name="status_bar_height">38dp</dimen>
+              <dimen name="status_bar_height_portrait">38dp</dimen>
+              <dimen name="status_bar_height_landscape">24dp</dimen>
+              
+              <dimen name="rounded_corner_radius">110px</dimen>
+              <dimen name="rounded_corner_radius_top">110px</dimen>
+              <dimen name="rounded_corner_radius_bottom">110px</dimen>
+          </resources>
+          EOF
 
       - name: Compile Overlay APK
         run: |
-          # Мы используем встроенный в GitHub Actions Android SDK.
-          # Путь к нему: $ANDROID_SDK_ROOT/platforms/android-34/android.jar
-          # Если 34 нет, он возьмет 33. Обычно на ubuntu-22.04 есть 33 и 34.
-          
           ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-34/android.jar"
-          
           if [ ! -f "$ANDROID_JAR" ]; then
-            echo "Android 34 not found, trying 33..."
             ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-33/android.jar"
           fi
           
           echo "Using android.jar at: $ANDROID_JAR"
 
-          # Сборка
           aapt package -f \
             -M AndroidManifest.xml \
             -S res \
@@ -45,10 +78,7 @@ jobs:
             
       - name: Sign APK
         run: |
-          # Генерируем тестовый ключ
           keytool -genkey -v -keystore test.keystore -alias test -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Android Debug,O=Android,C=US"
-          
-          # Подписываем APK
           apksigner sign --ks test.keystore --ks-pass pass:password --out treble_overlay_xiaomi_alioth.apk unaligned.apk
 
       - name: Upload Overlay APK
