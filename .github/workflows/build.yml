@@ -1,0 +1,50 @@
+name: Build Alioth Overlay
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Build Tools
+        run: |
+          sudo apt-get update
+          # Устанавливаем aapt и apksigner
+          sudo apt-get install -y aapt apksigner openjdk-11-jdk
+
+      - name: Download Android Framework (android.jar)
+        run: |
+          # Скачиваем легкий android.jar (API 30) для компиляции
+          wget -q https://github.com/kdrag0n/android_prebuilts/raw/master/android-30.jar -O android.jar
+
+      - name: Compile Overlay APK
+        run: |
+          # Собираем APK используя ресурсы из папки res
+          aapt package -f \
+            -M AndroidManifest.xml \
+            -S res \
+            -I android.jar \
+            -F unaligned.apk \
+            --min-sdk-version 29 \
+            --target-sdk-version 30
+            
+      - name: Sign APK
+        run: |
+          # Генерируем тестовый ключ
+          keytool -genkey -v -keystore test.keystore -alias test -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Android Debug,O=Android,C=US"
+          
+          # Подписываем APK
+          apksigner sign --ks test.keystore --ks-pass pass:password --out treble_overlay_xiaomi_alioth.apk unaligned.apk
+
+      - name: Upload Overlay APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: treble_overlay_xiaomi_alioth
+          path: treble_overlay_xiaomi_alioth.apk
