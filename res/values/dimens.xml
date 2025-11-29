@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Высота статус бара для Poco F3 -->
+    <dimen name="status_bar_height">38dp</dimen>
+    <dimen name="status_bar_height_portrait">38dp</dimen>
+    <dimen name="status_bar_height_landscape">24dp</dimen>
+    
+    <!-- Скругления углов -->
+    <dimen name="rounded_corner_radius">110px</dimen>
+    <dimen name="rounded_corner_radius_top">110px</dimen>
+    <dimen name="rounded_corner_radius_bottom">110px</dimen>
+</resources>
