@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Включаем навигационную панель -->
+    <bool name="config_showNavigationBar">true</bool>
+
+    <!-- Скругление углов экрана (110px для Alioth) -->
+    <dimen name="rounded_corner_radius">110px</dimen>
+
+    <!-- ВЫРЕЗ КАМЕРЫ (Punch Hole) -->
+    <!-- M 540,35 = центр по X (1080/2), центр по Y (35px от верха) -->
+    <string name="config_mainBuiltInDisplayCutout">M 540,35 a 35,35 0 1,0 0,70 a 35,35 0 1,0 0,-70 Z</string>
+    <bool name="config_fillMainBuiltInDisplayCutout">true</bool>
+
+    <!-- ЯРКОСТЬ (Xiaomi обычно использует шкалу до 1023 или 2047 или 4095) -->
+    <!-- Для Alioth/Redmi K40 чаще всего 1023 -->
+    <bool name="config_automatic_brightness_available">true</bool>
+    <integer name="config_screenBrightnessSettingMinimum">1</integer>
+    <integer name="config_screenBrightnessSettingMaximum">1023</integer>
+    <integer name="config_screenBrightnessDoze">17</integer>
+
+    <!-- Герцовка -->
+    <integer name="config_defaultRefreshRate">120</integer>
+    <integer name="config_defaultPeakRefreshRate">120</integer>
+    
+    <!-- Разблокировка пальцем при выключенном экране -->
+    <bool name="config_fingerprintSupportsGestures">true</bool>
+</resources>
